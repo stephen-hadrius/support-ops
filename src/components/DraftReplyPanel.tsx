@@ -162,6 +162,9 @@ export function DraftReplyPanel({
                 label = "Linear";
                 colorClass = "bg-orange-100 text-orange-700";
                 logoSrc = "/linear-logo.svg";
+              } else if (displayType === "thread") {
+                label = "Pylon Thread";
+                logoSrc = "/pylon-icon.png";
               }
 
               return (
