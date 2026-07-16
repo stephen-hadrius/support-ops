@@ -17,7 +17,7 @@ const VERDICT_STYLES: Record<string, string> = {
   confirmation: "bg-violet-50 text-violet-700 border-violet-200",
 };
 
-export function AccountEmbedClient({ tickets }: { tickets: Array<{ ticket: any, analysis: any }> }) {
+export function AccountEmbedClient({ tickets, account_id }: { tickets: Array<{ ticket: any, analysis: any }>, account_id: string }) {
   const [activeTab, setActiveTab] = useState<"queue" | "analytics">("queue");
 
   const stats = useMemo(() => {
@@ -37,6 +37,8 @@ export function AccountEmbedClient({ tickets }: { tickets: Array<{ ticket: any, 
     return (
       <div className="p-4 text-center text-sm text-zinc-500">
         No open tickets found for this account in the Support Ops dashboard.
+        <br/><br/>
+        <span className="text-xs text-zinc-400 font-mono">Debug Account ID: {account_id}</span>
       </div>
     );
   }
