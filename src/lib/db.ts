@@ -302,7 +302,7 @@ export function upsertTicket(ticket: UpsertTicketInput): void {
 
 // Tickets in these states are still synced (so we track state transitions accurately) but are
 // never shown in the dashboard.
-const HIDDEN_STATES = ["waiting_on_customer"];
+const HIDDEN_STATES = ["waiting_on_customer", "closed", "resolved", "archived", "done"];
 const HIDDEN_STATES_PLACEHOLDERS = HIDDEN_STATES.map(() => "?").join(",");
 
 /** Dashboard tickets, with any active snooze joined in. */
