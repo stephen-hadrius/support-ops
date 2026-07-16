@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
 import { ToastProvider } from "@/components/ToastProvider";
-import { Sidebar } from "@/components/Sidebar";
 import "./globals.css";
 
 const inter = Inter({
@@ -31,10 +30,7 @@ export default function RootLayout({
     >
       <body className="min-h-full">
         <ToastProvider>
-          <div className="flex min-h-screen bg-white">
-            <Sidebar />
-            <main className="min-w-0 flex-1">{children}</main>
-          </div>
+          {children}
         </ToastProvider>
       </body>
     </html>
