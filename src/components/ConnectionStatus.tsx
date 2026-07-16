@@ -9,7 +9,7 @@ function Pill({ label, connected, icon }: { label: string; connected: boolean; i
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 shadow-sm transition-colors">
         {icon ? (
-          <img src={icon} alt="" width={12} height={12} className="opacity-80" />
+          <img src={icon} alt="" className="h-3 w-3 object-contain opacity-80" />
         ) : (
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
         )}
@@ -23,7 +23,7 @@ function Pill({ label, connected, icon }: { label: string; connected: boolean; i
       className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700 hover:bg-amber-100 shadow-sm transition-colors"
     >
       {icon ? (
-        <img src={icon} alt="" width={12} height={12} className="opacity-80 grayscale" />
+        <img src={icon} alt="" className="h-3 w-3 object-contain opacity-80 grayscale" />
       ) : (
         <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
       )}
