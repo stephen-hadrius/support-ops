@@ -1,12 +1,23 @@
 import { listTickets, getAnalysis } from "@/lib/db";
 import { AccountEmbedClient } from "./AccountEmbedClient";
 
-export default async function EmbedAccountPage({ searchParams }: { searchParams: Promise<{ account_id?: string }> }) {
-  const { account_id } = await searchParams;
+export default async function EmbedAccountPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const params = await searchParams;
+  const account_id = (params.account_id || params.id || params.account) as string | undefined;
   
-  console.log("EmbedAccountPage requested with account_id:", account_id);
-
-  if (!account_id) return <div className="p-4 text-sm text-zinc-500">No account_id provided in iframe URL. Please configure the Pylon Iframe App to pass ?account_id={"{{account.id}}"}</div>;
+  if (!account_id || account_id === '{{account.id}}' || account_id === '{{account_id}}') {
+    return (
+      <div className="p-4 text-sm text-zinc-500 break-words">
+        <strong>Error: Invalid or missing Account ID.</strong><br/><br/>
+        It looks like Pylon passed these exact URL parameters to the iframe:<br/>
+        <code className="text-xs bg-zinc-100 p-2 block mt-2 rounded">
+          {JSON.stringify(params, null, 2)}
+        </code>
+        <br/>
+        Please check Pylon's iframe documentation for the correct variable syntax (e.g. {'{account.id}'}, {'{{id}}'}, etc.), or see if Pylon automatically appends the account ID if you just use a base URL without query strings.
+      </div>
+    );
+  }
 
   const allTickets = listTickets();
   const accountTickets = allTickets.filter(t => {
