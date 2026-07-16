@@ -170,7 +170,7 @@ export function DraftReplyPanel({
               return (
               <li key={i} className="flex items-center gap-2 text-xs">
                 <span className={`shrink-0 flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium ${colorClass}`}>
-                  {logoSrc && <Image src={logoSrc} alt={label} width={10} height={10} className="opacity-70" />}
+                  {logoSrc && <img src={logoSrc} alt={label} width={10} height={10} className="opacity-70" />}
                   {label}
                 </span>
                 {s.url ? (
