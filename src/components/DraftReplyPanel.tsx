@@ -5,6 +5,7 @@ import type { Analysis, AnalysisSource } from "@/lib/types";
 import { formatDate } from "@/lib/format";
 import { friendlyError } from "@/lib/clientErrors";
 import { useToasts } from "./ToastProvider";
+import Image from "next/image";
 
 export function DraftReplyPanel({
   ticketId,
@@ -139,6 +140,7 @@ export function DraftReplyPanel({
               let displayType = s.type as string;
               let label = "Thread";
               let colorClass = "bg-zinc-100 text-zinc-500";
+              let logoSrc = null;
               
               if (s.url?.includes("linear.app")) {
                 displayType = "linear";
@@ -151,17 +153,21 @@ export function DraftReplyPanel({
               if (displayType === "knowledge") {
                 label = "Notion";
                 colorClass = "bg-sky-100 text-sky-700";
+                logoSrc = "/notion-logo.svg";
               } else if (displayType === "compliance") {
                 label = "Hadrius";
                 colorClass = "bg-purple-100 text-purple-700";
+                logoSrc = "/hadrius-logo.png";
               } else if (displayType === "linear") {
                 label = "Linear";
                 colorClass = "bg-orange-100 text-orange-700";
+                logoSrc = "/linear-logo.svg";
               }
 
               return (
-              <li key={i} className="flex items-baseline gap-2 text-xs">
-                <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${colorClass}`}>
+              <li key={i} className="flex items-center gap-2 text-xs">
+                <span className={`shrink-0 flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium ${colorClass}`}>
+                  {logoSrc && <Image src={logoSrc} alt={label} width={10} height={10} className="opacity-70" />}
                   {label}
                 </span>
                 {s.url ? (
@@ -169,12 +175,12 @@ export function DraftReplyPanel({
                     href={s.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-indigo-600 hover:underline"
+                    className="text-indigo-600 hover:underline flex-1 truncate"
                   >
                     {s.reference}
                   </a>
                 ) : (
-                  <span className="text-zinc-600">{s.reference}</span>
+                  <span className="text-zinc-600 flex-1 truncate">{s.reference}</span>
                 )}
               </li>
             )})}
