@@ -150,7 +150,9 @@ export function DraftReplyPanel({
           draftReply === null
             ? verdict === "follow_up"
               ? "AI flagged this for internal follow-up and did not draft a public reply. You can write a manual reply or use the 'Add Internal Note' button below..."
-              : "AI determined no public reply is needed right now. You can write a manual reply or use the 'Add Internal Note' button below..."
+              : verdict === "confirmation"
+                ? "AI flagged that the customer needs confirmation, but did not draft a public reply (likely due to missing context). You can write a manual reply or use the 'Add Internal Note' button below..."
+                : "AI determined no public reply is needed right now. You can write a manual reply or use the 'Add Internal Note' button below..."
             : ""
         }
         className="w-full resize-y rounded-md border border-zinc-200 bg-white p-3 text-sm leading-relaxed text-zinc-800 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
