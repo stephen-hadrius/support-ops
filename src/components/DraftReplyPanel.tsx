@@ -87,14 +87,6 @@ export function DraftReplyPanel({
     setText(baseline);
   }
 
-  if (draftReply === null && editedDraft === null) {
-    return (
-      <div className="rounded-lg border border-zinc-200 bg-white p-4 text-sm text-zinc-400">
-        No reply needed right now.
-      </div>
-    );
-  }
-
   const dirty = text !== baseline;
 
   const handleCopy = async () => {
@@ -125,8 +117,12 @@ export function DraftReplyPanel({
     <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="rounded-full border border-amber-300 bg-amber-100 px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-amber-700 uppercase">
-            Draft — not sent
+          <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold tracking-wide uppercase ${
+            draftReply === null && editedDraft === null && !dirty 
+              ? 'border-zinc-200 bg-zinc-100 text-zinc-500' 
+              : 'border-amber-300 bg-amber-100 text-amber-700'
+          }`}>
+            {draftReply === null && editedDraft === null && !dirty ? "No AI Draft" : "Draft — not sent"}
           </span>
           {editedAt && (
             <span
@@ -148,6 +144,7 @@ export function DraftReplyPanel({
         value={text}
         onChange={(e) => setText(e.target.value)}
         rows={8}
+        placeholder={draftReply === null ? "AI determined no reply is needed. You can write a manual reply or use the 'Add Internal Note' button below..." : ""}
         className="w-full resize-y rounded-md border border-zinc-200 bg-white p-3 text-sm leading-relaxed text-zinc-800 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
       />
       
