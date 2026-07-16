@@ -105,13 +105,52 @@ export function DraftReplyPanel({
         <div className="mt-2 flex items-center gap-2">
           {dirty && (
             <>
-              <button
-                onClick={() => void patchDraft(text)}
-                disabled={saving}
-                className="rounded-md border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
-              >
-                {saving ? "Saving…" : "Save edit"}
-              </button>
+              <div className="flex items-center gap-2 mt-4">
+                <button
+                  onClick={async () => {
+                    setSaving(true);
+                    try {
+                      const res = await fetch(`/api/tickets/${ticketId}/send-reply`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ body: text }),
+                      });
+                      if (!res.ok) throw new Error((await res.json()).error);
+                      addToast("Reply sent to customer successfully!", "success");
+                    } catch (err) {
+                      addToast(friendlyError(err, "Failed to send reply"), "error");
+                    } finally {
+                      setSaving(false);
+                    }
+                  }}
+                  disabled={saving || !text.trim()}
+                  className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500 disabled:opacity-50 transition"
+                >
+                  Send Public Reply
+                </button>
+                <button
+                  onClick={async () => {
+                    setSaving(true);
+                    try {
+                      const res = await fetch(`/api/tickets/${ticketId}/send-note`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ body: text }),
+                      });
+                      if (!res.ok) throw new Error((await res.json()).error);
+                      addToast("Internal note added successfully!", "success");
+                    } catch (err) {
+                      addToast(friendlyError(err, "Failed to add internal note"), "error");
+                    } finally {
+                      setSaving(false);
+                    }
+                  }}
+                  disabled={saving || !text.trim()}
+                  className="rounded-md bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-400 disabled:opacity-50 transition"
+                >
+                  Add Internal Note
+                </button>
+              </div>
               <button
                 onClick={() => setText(baseline)}
                 disabled={saving}
@@ -190,9 +229,6 @@ export function DraftReplyPanel({
           </ul>
         </div>
       )}
-      <p className="mt-2 text-xs text-zinc-500">
-        Pylon has no API to send a reply directly, so edit here, then copy and paste into Pylon to send.
-      </p>
     </div>
   );
 }
