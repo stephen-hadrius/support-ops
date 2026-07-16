@@ -249,6 +249,7 @@ export function TicketRow({
                   </div>
                   <DraftReplyPanel
                     ticketId={ticket.id}
+                    verdict={analysis.verdict}
                     draftReply={analysis.draft_reply}
                     editedDraft={analysis.edited_draft}
                     editedAt={analysis.edited_at}

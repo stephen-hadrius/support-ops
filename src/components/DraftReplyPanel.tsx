@@ -9,6 +9,7 @@ import Image from "next/image";
 
 export function DraftReplyPanel({
   ticketId,
+  verdict,
   draftReply,
   editedDraft,
   editedAt,
@@ -16,6 +17,7 @@ export function DraftReplyPanel({
   onSaved,
 }: {
   ticketId: string;
+  verdict?: string;
   draftReply: string | null;
   editedDraft: string | null;
   editedAt: string | null;
@@ -144,7 +146,13 @@ export function DraftReplyPanel({
         value={text}
         onChange={(e) => setText(e.target.value)}
         rows={8}
-        placeholder={draftReply === null ? "AI determined no reply is needed. You can write a manual reply or use the 'Add Internal Note' button below..." : ""}
+        placeholder={
+          draftReply === null
+            ? verdict === "follow_up"
+              ? "AI flagged this for internal follow-up and did not draft a public reply. You can write a manual reply or use the 'Add Internal Note' button below..."
+              : "AI determined no public reply is needed right now. You can write a manual reply or use the 'Add Internal Note' button below..."
+            : ""
+        }
         className="w-full resize-y rounded-md border border-zinc-200 bg-white p-3 text-sm leading-relaxed text-zinc-800 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
       />
       
