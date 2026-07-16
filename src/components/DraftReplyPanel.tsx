@@ -135,20 +135,34 @@ export function DraftReplyPanel({
         <div className="mt-3 border-t border-amber-200/70 pt-3">
           <div className="text-[11px] font-semibold tracking-wide text-zinc-400 uppercase">Sources</div>
           <ul className="mt-1.5 space-y-1">
-            {sources.map((s, i) => (
+            {sources.map((s, i) => {
+              let displayType = s.type as string;
+              let label = "Thread";
+              let colorClass = "bg-zinc-100 text-zinc-500";
+              
+              if (s.url?.includes("linear.app")) {
+                displayType = "linear";
+              } else if (s.url?.includes("notion.so") || s.url?.includes("notion.site")) {
+                displayType = "knowledge";
+              } else if (s.url?.includes("hadrius.com")) {
+                displayType = "compliance";
+              }
+
+              if (displayType === "knowledge") {
+                label = "Notion";
+                colorClass = "bg-sky-100 text-sky-700";
+              } else if (displayType === "compliance") {
+                label = "Hadrius";
+                colorClass = "bg-purple-100 text-purple-700";
+              } else if (displayType === "linear") {
+                label = "Linear";
+                colorClass = "bg-orange-100 text-orange-700";
+              }
+
+              return (
               <li key={i} className="flex items-baseline gap-2 text-xs">
-                <span
-                  className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${
-                    s.type === "knowledge"
-                      ? "bg-sky-100 text-sky-700"
-                      : s.type === "compliance"
-                      ? "bg-purple-100 text-purple-700"
-                      : s.type === "linear"
-                      ? "bg-orange-100 text-orange-700"
-                      : "bg-zinc-100 text-zinc-500"
-                  }`}
-                >
-                  {s.type === "knowledge" ? "Notion" : s.type === "compliance" ? "Hadrius" : s.type === "linear" ? "Linear" : "Thread"}
+                <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${colorClass}`}>
+                  {label}
                 </span>
                 {s.url ? (
                   <a
@@ -163,7 +177,7 @@ export function DraftReplyPanel({
                   <span className="text-zinc-600">{s.reference}</span>
                 )}
               </li>
-            ))}
+            )})}
           </ul>
         </div>
       )}
