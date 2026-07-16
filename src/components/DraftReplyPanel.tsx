@@ -153,7 +153,7 @@ export function DraftReplyPanel({
               if (displayType === "knowledge") {
                 label = "Notion";
                 colorClass = "bg-sky-100 text-sky-700";
-                logoSrc = "/notion-logo.svg";
+                logoSrc = "/notion-logo.png";
               } else if (displayType === "compliance") {
                 label = "Hadrius";
                 colorClass = "bg-purple-100 text-purple-700";
@@ -161,7 +161,7 @@ export function DraftReplyPanel({
               } else if (displayType === "linear") {
                 label = "Linear";
                 colorClass = "bg-orange-100 text-orange-700";
-                logoSrc = "/linear-logo.svg";
+                logoSrc = "/linear-logo.png";
               } else if (displayType === "thread") {
                 label = "Pylon Thread";
                 logoSrc = "/pylon-icon.png";
@@ -170,7 +170,7 @@ export function DraftReplyPanel({
               return (
               <li key={i} className="flex items-center gap-2 text-xs">
                 <span className={`shrink-0 flex items-center gap-1.5 rounded px-2 py-0.5 text-[10px] font-medium ${colorClass}`}>
-                  {logoSrc && <img src={logoSrc} alt={label} className="h-3 w-3 object-contain opacity-70" />}
+                  {logoSrc && <img src={logoSrc} alt={label} className="h-3.5 w-3.5 object-contain" />}
                   {label}
                 </span>
                 {s.url ? (
