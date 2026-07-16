@@ -12,6 +12,7 @@ import { searchKnowledge } from "./mcp/notion";
 import { searchCompliance } from "./mcp/hadrius";
 import { searchLinear } from "./mcp/linear";
 import { getIssueMessages } from "./mcp/pylon";
+import { fetchPylonKnowledgeBase } from "./pylonKb";
 import type { Analysis } from "./types";
 
 export type RunAnalysisOutcome =
@@ -45,6 +46,7 @@ export async function runAnalysisForTicket(
     const knowledge = await searchKnowledge(baseUrl, ticket.title);
     const compliance = await searchCompliance(baseUrl, ticket.title);
     const linear = await searchLinear(baseUrl, ticket.title);
+    const pylonKb = await fetchPylonKnowledgeBase(process.env.PYLON_API_KEY);
     const result = await analyzeTicket({
       title: ticket.title,
       number: ticket.number,
@@ -53,10 +55,11 @@ export async function runAnalysisForTicket(
       knowledge: knowledge.text,
       compliance: compliance.text,
       linear: linear.text,
+      pylonKb,
     });
 
     const computedAt = new Date().toISOString();
-    const grounded = knowledge.text.trim().length > 0 || compliance.text.trim().length > 0 || linear.text.trim().length > 0;
+    const grounded = knowledge.text.trim().length > 0 || compliance.text.trim().length > 0 || linear.text.trim().length > 0 || pylonKb.trim().length > 0;
     saveAnalysis(ticketId, ticket.last_activity_at, result, computedAt, grounded);
     const saved = getAnalysis(ticketId);
     if (!saved) return { status: "failed", error: "Analysis was not persisted" };

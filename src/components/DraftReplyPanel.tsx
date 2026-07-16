@@ -28,6 +28,7 @@ export function DraftReplyPanel({
   const [lastBaseline, setLastBaseline] = useState(baseline);
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<"reply" | "note" | null>(null);
   const { addToast } = useToasts();
 
   // Reset the editable text when the server-side draft or saved edit changes (fresh analysis, a
@@ -103,46 +104,53 @@ export function DraftReplyPanel({
       />
       
       {/* Action Buttons - Always visible */}
-      <div className="mt-3 flex items-center gap-2">
+      <div className="mt-3 flex items-center gap-2 relative">
+        {confirmAction ? (
+          <div className="flex items-center gap-2 rounded-md bg-zinc-800 p-2 text-white shadow-lg z-10 absolute -top-12 left-0 w-full animate-in fade-in slide-in-from-bottom-2">
+            <span className="text-xs flex-1 font-medium px-2">
+              {confirmAction === "reply" ? "Send this public reply to the customer?" : "Add this as an internal note?"}
+            </span>
+            <button
+              onClick={async () => {
+                const action = confirmAction;
+                setConfirmAction(null);
+                setSaving(true);
+                try {
+                  const res = await fetch(`/api/tickets/${ticketId}/send-${action}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ body: text }),
+                  });
+                  if (!res.ok) throw new Error((await res.json()).error);
+                  addToast(action === "reply" ? "Reply sent to customer successfully!" : "Internal note added successfully!", "success");
+                } catch (err) {
+                  addToast(friendlyError(err, `Failed to send ${action}`), "error");
+                } finally {
+                  setSaving(false);
+                }
+              }}
+              className="rounded bg-white px-2.5 py-1 text-xs font-semibold text-zinc-900 hover:bg-zinc-100 transition"
+            >
+              Confirm
+            </button>
+            <button
+              onClick={() => setConfirmAction(null)}
+              className="rounded px-2.5 py-1 text-xs font-medium text-zinc-300 hover:bg-zinc-700 hover:text-white transition"
+            >
+              Cancel
+            </button>
+          </div>
+        ) : null}
+        
         <button
-          onClick={async () => {
-            setSaving(true);
-            try {
-              const res = await fetch(`/api/tickets/${ticketId}/send-reply`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ body: text }),
-              });
-              if (!res.ok) throw new Error((await res.json()).error);
-              addToast("Reply sent to customer successfully!", "success");
-            } catch (err) {
-              addToast(friendlyError(err, "Failed to send reply"), "error");
-            } finally {
-              setSaving(false);
-            }
-          }}
+          onClick={() => setConfirmAction("reply")}
           disabled={saving || !text.trim()}
           className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500 disabled:opacity-50 transition shadow-sm"
         >
           Send Public Reply
         </button>
         <button
-          onClick={async () => {
-            setSaving(true);
-            try {
-              const res = await fetch(`/api/tickets/${ticketId}/send-note`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ body: text }),
-              });
-              if (!res.ok) throw new Error((await res.json()).error);
-              addToast("Internal note added successfully!", "success");
-            } catch (err) {
-              addToast(friendlyError(err, "Failed to add internal note"), "error");
-            } finally {
-              setSaving(false);
-            }
-          }}
+          onClick={() => setConfirmAction("note")}
           disabled={saving || !text.trim()}
           className="rounded-md bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-400 disabled:opacity-50 transition shadow-sm"
         >
@@ -212,10 +220,12 @@ export function DraftReplyPanel({
                 label = "Linear";
                 colorClass = "bg-orange-100 text-orange-700";
                 logoSrc = "/linear-logo.png";
-              } else if (displayType === "thread") {
+              } else if (displayType === "thread" || displayType === "pylon") {
                 label = "Pylon Thread";
                 logoSrc = "/pylon-icon.png";
               }
+
+              const sourceUrl = s.url || (displayType === "thread" ? `https://app.usepylon.com/support/issues/views/all-issues?issueNumber=${ticketId}` : undefined);
 
               return (
               <li key={i} className="flex items-center gap-2 text-xs">
@@ -223,9 +233,9 @@ export function DraftReplyPanel({
                   {logoSrc && <img src={logoSrc} alt={label} className="h-3.5 w-3.5 object-contain" />}
                   {label}
                 </span>
-                {s.url ? (
+                {sourceUrl ? (
                   <a
-                    href={s.url}
+                    href={sourceUrl}
                     target="_blank"
                     rel="noreferrer"
                     className="text-indigo-600 hover:underline flex-1 truncate"

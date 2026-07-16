@@ -31,7 +31,7 @@ const RESPONSE_SCHEMA = {
       items: {
         type: "object",
         properties: {
-          type: { type: "string", enum: ["thread", "knowledge", "compliance", "linear"] },
+          type: { type: "string", enum: ["thread", "knowledge", "compliance", "linear", "pylon_kb"] },
           reference: { type: "string" },
           url: { type: "string", nullable: true },
         },
@@ -84,7 +84,7 @@ Respond with a JSON object containing these fields:
 - why: one or two sentences explaining the verdict, grounded in the thread and/or internal knowledge/compliance rules. Keep it to plain prose — do not include any markup or field tags.
 - needs_reply: true only if a customer-facing reply should be sent now.
 - draft_reply: a ready-to-paste customer-facing reply when needs_reply is true, otherwise null.
-- sources: an array of every source you relied on for the draft reply and verdict. Each item is an object {type, reference, url}: type is "thread" for a ticket message, "knowledge" for an internal Notion doc, "compliance" for a Hadrius compliance doc, or "linear" for a related Linear ticket; reference is a short label (a doc/page title/rule description, or which message by who and when, or the Linear ticket ID); url is the doc/rule/ticket's URL when the knowledge/compliance/linear text provides one, otherwise null (thread sources are always null). CRITICAL: Do not label Linear tickets as "knowledge" - they must be labeled as "linear". Every factual claim in the draft reply must trace to a listed source. Cite only material actually shown to you below — never fabricate a title or URL. Use an empty array if there is no draft reply and you used nothing beyond the plain request.`;
+- sources: an array of every source you relied on for the draft reply and verdict. Each item is an object {type, reference, url}: type is "thread" for a ticket message, "knowledge" for an internal Notion doc, "compliance" for a Hadrius compliance doc, "linear" for a related Linear ticket, or "pylon_kb" for a Pylon Knowledge Base article; reference is a short label (a doc/page title/rule description, or which message by who and when, or the Linear ticket ID); url is the doc/rule/ticket's URL when the knowledge/compliance/linear text provides one, otherwise null (thread sources are always null). CRITICAL: Do not label Linear tickets as "knowledge" - they must be labeled as "linear". Every factual claim in the draft reply must trace to a listed source. Cite only material actually shown to you below — never fabricate a title or URL. Use an empty array if there is no draft reply and you used nothing beyond the plain request.`;
 
 export async function analyzeTicket(input: {
   title: string;
@@ -94,6 +94,7 @@ export async function analyzeTicket(input: {
   knowledge: string;
   compliance?: string;
   linear?: string;
+  pylonKb?: string;
 }): Promise<AnalysisResult> {
   const userContent = `Ticket #${input.number} — "${input.title}"
 Current Pylon state: ${input.state}
@@ -108,7 +109,10 @@ Compliance rules (from Hadrius; may be empty if nothing relevant was found):
 ${input.compliance || "(no matching compliance rules found)"}
 
 Related tickets (from Linear; may be empty if nothing relevant was found):
-${input.linear || "(no related linear tickets found)"}`;
+${input.linear || "(no related linear tickets found)"}
+
+Pylon Knowledge Base (may be empty if no articles exist):
+${input.pylonKb || "(no pylon knowledge base articles provided)"}`;
 
   let lastIssue = "no response";
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {

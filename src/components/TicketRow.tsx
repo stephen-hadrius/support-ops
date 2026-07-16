@@ -113,7 +113,7 @@ export function TicketRow({
         </td>
         <td className="py-3 pr-4">
           <a
-            href={`${pylonBaseUrl}/issues/${ticket.number}`}
+            href={`${pylonBaseUrl}/support/issues/views/all-issues?issueNumber=${ticket.number}`}
             target="_blank"
             rel="noreferrer"
             onClick={(e) => e.stopPropagation()}
