@@ -28,8 +28,56 @@ export function DraftReplyPanel({
   const [lastBaseline, setLastBaseline] = useState(baseline);
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [confirmAction, setConfirmAction] = useState<"reply" | "note" | null>(null);
+  const [confirmAction, setConfirmAction] = useState<"reply" | null>(null);
+  const [internalNoteModalOpen, setInternalNoteModalOpen] = useState(false);
+  const [internalNoteText, setInternalNoteText] = useState("");
+  const [isGeneratingNote, setIsGeneratingNote] = useState(false);
+  const [isSendingNote, setIsSendingNote] = useState(false);
+  const [confirmNoteSend, setConfirmNoteSend] = useState(false);
   const { addToast } = useToasts();
+
+  const handleOpenInternalNote = async () => {
+    setInternalNoteModalOpen(true);
+    setConfirmNoteSend(false);
+    
+    // Auto-generate if empty
+    if (!internalNoteText.trim()) {
+      setIsGeneratingNote(true);
+      try {
+        const res = await fetch(`/api/tickets/${ticketId}/generate-note`, { method: "POST" });
+        const data = await res.json();
+        if (res.ok && data.note) {
+          setInternalNoteText(data.note);
+        } else {
+          throw new Error(data.error ?? "Failed to generate note");
+        }
+      } catch (err) {
+        addToast(friendlyError(err, "Failed to auto-generate internal note"), "error");
+      } finally {
+        setIsGeneratingNote(false);
+      }
+    }
+  };
+
+  const handleSendInternalNote = async () => {
+    setIsSendingNote(true);
+    try {
+      const res = await fetch(`/api/tickets/${ticketId}/send-note`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body: internalNoteText }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error);
+      addToast("Internal note added successfully!", "success");
+      setInternalNoteModalOpen(false);
+      setInternalNoteText("");
+    } catch (err) {
+      addToast(friendlyError(err, "Failed to add internal note"), "error");
+    } finally {
+      setIsSendingNote(false);
+      setConfirmNoteSend(false);
+    }
+  };
 
   // Reset the editable text when the server-side draft or saved edit changes (fresh analysis, a
   // save/revert, or an edit cleared by new activity), without clobbering in-progress edits on
@@ -108,23 +156,22 @@ export function DraftReplyPanel({
         {confirmAction ? (
           <div className="flex items-center gap-2 rounded-md bg-zinc-800 p-2 text-white shadow-lg z-10 absolute -top-12 left-0 w-full animate-in fade-in slide-in-from-bottom-2">
             <span className="text-xs flex-1 font-medium px-2">
-              {confirmAction === "reply" ? "Send this public reply to the customer?" : "Add this as an internal note?"}
+              Send this public reply to the customer?
             </span>
             <button
               onClick={async () => {
-                const action = confirmAction;
                 setConfirmAction(null);
                 setSaving(true);
                 try {
-                  const res = await fetch(`/api/tickets/${ticketId}/send-${action}`, {
+                  const res = await fetch(`/api/tickets/${ticketId}/send-reply`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ body: text }),
                   });
                   if (!res.ok) throw new Error((await res.json()).error);
-                  addToast(action === "reply" ? "Reply sent to customer successfully!" : "Internal note added successfully!", "success");
+                  addToast("Reply sent to customer successfully!", "success");
                 } catch (err) {
-                  addToast(friendlyError(err, `Failed to send ${action}`), "error");
+                  addToast(friendlyError(err, "Failed to send reply"), "error");
                 } finally {
                   setSaving(false);
                 }
@@ -150,9 +197,8 @@ export function DraftReplyPanel({
           Send Public Reply
         </button>
         <button
-          onClick={() => setConfirmAction("note")}
-          disabled={saving || !text.trim()}
-          className="rounded-md bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-400 disabled:opacity-50 transition shadow-sm"
+          onClick={handleOpenInternalNote}
+          className="rounded-md bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-400 transition shadow-sm"
         >
           Add Internal Note
         </button>
@@ -248,6 +294,75 @@ export function DraftReplyPanel({
               </li>
             )})}
           </ul>
+        </div>
+      )}
+
+      {/* Internal Note Modal */}
+      {internalNoteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl relative animate-in fade-in zoom-in-95 duration-200">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-zinc-900">Add Internal Note</h3>
+              <button 
+                onClick={() => setInternalNoteModalOpen(false)}
+                className="text-zinc-400 hover:text-zinc-600"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="relative">
+              {isGeneratingNote && (
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-md bg-white/80 backdrop-blur-sm">
+                  <span className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-amber-200 border-t-amber-500 mb-2" />
+                  <span className="text-xs font-medium text-amber-700">AI is drafting a suggested note...</span>
+                </div>
+              )}
+              <textarea
+                value={internalNoteText}
+                onChange={(e) => setInternalNoteText(e.target.value)}
+                rows={6}
+                placeholder="Write an internal note..."
+                className="w-full resize-y rounded-md border border-zinc-200 bg-white p-3 text-sm leading-relaxed text-zinc-800 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
+              />
+            </div>
+
+            <div className="mt-5 flex items-center justify-end gap-3">
+              <button
+                onClick={() => setInternalNoteModalOpen(false)}
+                className="rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-50"
+              >
+                Cancel
+              </button>
+              
+              {confirmNoteSend ? (
+                <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-md p-1 pl-3">
+                  <span className="text-xs font-medium text-amber-800">Ready to send?</span>
+                  <button
+                    onClick={handleSendInternalNote}
+                    disabled={isSendingNote}
+                    className="rounded-md bg-amber-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-amber-400 disabled:opacity-50"
+                  >
+                    {isSendingNote ? "Sending..." : "Yes, Send Note"}
+                  </button>
+                  <button
+                    onClick={() => setConfirmNoteSend(false)}
+                    className="rounded-md text-zinc-400 hover:text-zinc-600 px-2 py-1.5 text-sm"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirmNoteSend(true)}
+                  disabled={!internalNoteText.trim() || isGeneratingNote}
+                  className="rounded-md bg-amber-500 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-400 disabled:opacity-50 shadow-sm"
+                >
+                  Send Internal Note
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
