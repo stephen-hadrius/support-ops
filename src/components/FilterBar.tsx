@@ -145,6 +145,10 @@ interface FilterBarProps {
   onSourceFilterChange: (v: AnalysisSource["type"][]) => void;
   stateFilter: string[];
   onStateFilterChange: (v: string[]) => void;
+  dateFrom: string;
+  onDateFromChange: (v: string) => void;
+  dateTo: string;
+  onDateToChange: (v: string) => void;
   availableStates: string[];
   search: string;
   onSearchChange: (v: string) => void;
@@ -159,6 +163,10 @@ export function FilterBar({
   onSourceFilterChange,
   stateFilter,
   onStateFilterChange,
+  dateFrom,
+  onDateFromChange,
+  dateTo,
+  onDateToChange,
   availableStates,
   search,
   onSearchChange,
@@ -202,6 +210,33 @@ export function FilterBar({
             <StateFilter selected={stateFilter} onChange={onStateFilterChange} availableStates={availableStates} />
           </div>
         )}
+        <div className="flex items-center gap-x-2">
+          <span className="text-xs font-medium text-zinc-500">Created</span>
+          <div className="flex items-center gap-1">
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => onDateFromChange(e.target.value)}
+              className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs text-zinc-700 hover:border-zinc-300 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-100"
+            />
+            <span className="text-xs text-zinc-400">-</span>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => onDateToChange(e.target.value)}
+              className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs text-zinc-700 hover:border-zinc-300 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-100"
+            />
+            {(dateFrom || dateTo) && (
+              <button
+                onClick={() => { onDateFromChange(""); onDateToChange(""); }}
+                className="ml-1 text-xs text-zinc-400 hover:text-zinc-600 transition"
+                title="Clear dates"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

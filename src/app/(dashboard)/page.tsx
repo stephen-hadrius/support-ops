@@ -97,6 +97,8 @@ export default function Dashboard() {
   const [verdictFilter, setVerdictFilter] = useState<Verdict[]>([]);
   const [sourceFilter, setSourceFilter] = useState<AnalysisSource["type"][]>([]);
   const [stateFilter, setStateFilter] = useState<string[]>([]);
+  const [dateFrom, setDateFrom] = useState<string>("");
+  const [dateTo, setDateTo] = useState<string>("");
   const [search, setSearch] = useState("");
   const [showSnoozed, setShowSnoozed] = useState(false);
 
@@ -350,6 +352,10 @@ export default function Dashboard() {
     return tickets.filter((t) => {
       const isSnoozed = Boolean(t.snoozed_until);
       if (showSnoozed ? !isSnoozed : isSnoozed) return false;
+      
+      if (dateFrom && (!t.created_at || t.created_at.substring(0, 10) < dateFrom)) return false;
+      if (dateTo && (!t.created_at || t.created_at.substring(0, 10) > dateTo)) return false;
+
       if (adminFilter.length > 0 && !adminFilter.includes(t.admin_status)) return false;
       if (verdictFilter.length > 0) {
         const v = analyses[t.id]?.verdict;
@@ -377,7 +383,7 @@ export default function Dashboard() {
       }
       return true;
     });
-  }, [tickets, adminFilter, verdictFilter, sourceFilter, stateFilter, search, analyses, showSnoozed]);
+  }, [tickets, adminFilter, verdictFilter, sourceFilter, stateFilter, dateFrom, dateTo, search, analyses, showSnoozed]);
 
   const stats = useMemo(() => {
     // Snoozed tickets are deliberately deferred, so they don't count toward the live queue.
@@ -690,6 +696,10 @@ export default function Dashboard() {
           onSourceFilterChange={setSourceFilter}
           stateFilter={stateFilter}
           onStateFilterChange={setStateFilter}
+          dateFrom={dateFrom}
+          onDateFromChange={setDateFrom}
+          dateTo={dateTo}
+          onDateToChange={setDateTo}
           availableStates={availableStates}
           search={search}
           onSearchChange={setSearch}
