@@ -16,6 +16,7 @@ import type {
   Analysis,
   AnalysisFailure,
   AnalysisRunStatus,
+  AnalysisSource,
   DispositionAction,
   Ticket,
   Verdict,
@@ -94,6 +95,7 @@ export default function Dashboard() {
 
   const [adminFilter, setAdminFilter] = useState<AdminStatus[]>(["non_admin"]);
   const [verdictFilter, setVerdictFilter] = useState<Verdict[]>([]);
+  const [sourceFilter, setSourceFilter] = useState<AnalysisSource["type"][]>([]);
   const [stateFilter, setStateFilter] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [showSnoozed, setShowSnoozed] = useState(false);
@@ -353,6 +355,21 @@ export default function Dashboard() {
         const v = analyses[t.id]?.verdict;
         if (!v || !verdictFilter.includes(v)) return false;
       }
+      if (sourceFilter.length > 0) {
+        const sources = analyses[t.id]?.sources || [];
+        // Support "thread" filter capturing tickets with only thread sources, or zero sources (as they relied on thread)
+        const hasMatch = sourceFilter.some(sourceType => {
+          if (sourceType === "thread") {
+            return sources.length === 0 || sources.every(s => s.type === "thread" || s.type === "pylon");
+          }
+          // Handle backwards compatibility where pylon_kb might have been recorded as 'pylon'
+          if (sourceType === "pylon_kb") {
+             return sources.some(s => s.type === "pylon_kb" || s.type === "pylon");
+          }
+          return sources.some(s => s.type === sourceType);
+        });
+        if (!hasMatch) return false;
+      }
       if (stateFilter.length > 0 && !stateFilter.includes(t.state)) return false;
       if (q) {
         const haystack = `${t.title} ${t.number} ${t.requester_name ?? ""} ${t.requester_email ?? ""}`.toLowerCase();
@@ -360,7 +377,7 @@ export default function Dashboard() {
       }
       return true;
     });
-  }, [tickets, adminFilter, verdictFilter, stateFilter, search, analyses, showSnoozed]);
+  }, [tickets, adminFilter, verdictFilter, sourceFilter, stateFilter, search, analyses, showSnoozed]);
 
   const stats = useMemo(() => {
     // Snoozed tickets are deliberately deferred, so they don't count toward the live queue.
@@ -667,6 +684,8 @@ export default function Dashboard() {
           onAdminFilterChange={setAdminFilter}
           verdictFilter={verdictFilter}
           onVerdictFilterChange={setVerdictFilter}
+          sourceFilter={sourceFilter}
+          onSourceFilterChange={setSourceFilter}
           stateFilter={stateFilter}
           onStateFilterChange={setStateFilter}
           availableStates={availableStates}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { AdminStatus, Verdict } from "@/lib/types";
+import type { AdminStatus, Verdict, AnalysisSource } from "@/lib/types";
 import { VERDICT_LABELS, OPEN_STATE_LABELS } from "@/lib/types";
 
 const ADMIN_OPTIONS: { key: AdminStatus; label: string }[] = [
@@ -14,6 +14,14 @@ const VERDICT_OPTIONS: { key: Verdict; label: string }[] = [
   { key: "close", label: "Close" },
   { key: "follow_up", label: VERDICT_LABELS.follow_up },
   { key: "confirmation", label: "Confirmation" },
+];
+
+const SOURCE_OPTIONS: { key: AnalysisSource["type"]; label: string }[] = [
+  { key: "linear", label: "Linear" },
+  { key: "knowledge", label: "Notion" },
+  { key: "compliance", label: "Hadrius" },
+  { key: "pylon_kb", label: "Pylon KB" },
+  { key: "thread", label: "Thread Only" }
 ];
 
 // States surfaced as inline buttons; everything else falls into the "More" dropdown.
@@ -133,6 +141,8 @@ interface FilterBarProps {
   onAdminFilterChange: (v: AdminStatus[]) => void;
   verdictFilter: Verdict[];
   onVerdictFilterChange: (v: Verdict[]) => void;
+  sourceFilter: AnalysisSource["type"][];
+  onSourceFilterChange: (v: AnalysisSource["type"][]) => void;
   stateFilter: string[];
   onStateFilterChange: (v: string[]) => void;
   availableStates: string[];
@@ -145,6 +155,8 @@ export function FilterBar({
   onAdminFilterChange,
   verdictFilter,
   onVerdictFilterChange,
+  sourceFilter,
+  onSourceFilterChange,
   stateFilter,
   onStateFilterChange,
   availableStates,
@@ -171,16 +183,24 @@ export function FilterBar({
           className="w-full rounded-lg border border-zinc-200 bg-white py-2 pr-4 pl-9 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:outline-none"
         />
       </div>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <span className="text-xs font-medium text-zinc-500">Admin status</span>
-        <MultiTabGroup options={ADMIN_OPTIONS} selected={adminFilter} onChange={onAdminFilterChange} />
-        <span className="ml-2 text-xs font-medium text-zinc-500">Verdict</span>
-        <MultiTabGroup options={VERDICT_OPTIONS} selected={verdictFilter} onChange={onVerdictFilterChange} />
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+        <div className="flex items-center gap-x-2">
+          <span className="text-xs font-medium text-zinc-500">Admin status</span>
+          <MultiTabGroup options={ADMIN_OPTIONS} selected={adminFilter} onChange={onAdminFilterChange} />
+        </div>
+        <div className="flex items-center gap-x-2">
+          <span className="text-xs font-medium text-zinc-500">Verdict</span>
+          <MultiTabGroup options={VERDICT_OPTIONS} selected={verdictFilter} onChange={onVerdictFilterChange} />
+        </div>
+        <div className="flex items-center gap-x-2">
+          <span className="text-xs font-medium text-zinc-500">Source</span>
+          <MultiTabGroup options={SOURCE_OPTIONS} selected={sourceFilter} onChange={onSourceFilterChange} />
+        </div>
         {availableStates.length > 0 && (
-          <>
-            <span className="ml-2 text-xs font-medium text-zinc-500">State</span>
+          <div className="flex items-center gap-x-2">
+            <span className="text-xs font-medium text-zinc-500">State</span>
             <StateFilter selected={stateFilter} onChange={onStateFilterChange} availableStates={availableStates} />
-          </>
+          </div>
         )}
       </div>
     </div>

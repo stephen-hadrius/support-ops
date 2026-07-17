@@ -25,8 +25,8 @@ export interface Ticket {
 }
 
 export interface AnalysisSource {
-  /** "thread" = the ticket's own messages; "knowledge" = internal Notion documentation; "compliance" = Hadrius compliance documentation; "linear" = related Linear tickets. */
-  type: "thread" | "knowledge" | "compliance" | "linear";
+  /** "thread" = the ticket's own messages; "knowledge" = internal Notion documentation; "compliance" = Hadrius compliance documentation; "linear" = related Linear tickets; "pylon_kb" = Pylon Knowledge Base. */
+  type: "thread" | "knowledge" | "compliance" | "linear" | "pylon_kb" | "pylon";
   /** Short human label: a doc/page title, or which thread message (who + when). */
   reference: string;
   /** Source URL when the knowledge text provided one; null for thread messages. */
