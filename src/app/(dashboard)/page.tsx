@@ -382,12 +382,14 @@ export default function Dashboard() {
   const stats = useMemo(() => {
     // Snoozed tickets are deliberately deferred, so they don't count toward the live queue.
     const nonAdmin = tickets.filter((t) => t.admin_status === "non_admin" && !t.snoozed_until);
+    const admin = tickets.filter((t) => t.admin_status === "admin" && !t.snoozed_until);
     const count = (verdict: Verdict) =>
       nonAdmin.filter((t) => analyses[t.id]?.verdict === verdict).length;
     const canClose = count("close");
     const needsFollowUp = count("follow_up");
     const needsConfirmation = count("confirmation");
     return {
+      adminTotal: admin.length,
       nonAdminTotal: nonAdmin.length,
       canClose,
       needsFollowUp,
