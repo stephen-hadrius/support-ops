@@ -362,13 +362,16 @@ export default function Dashboard() {
         if (!v || !verdictFilter.includes(v)) return false;
       }
       if (sourceFilter.length > 0) {
+        // If the ticket hasn't been analyzed yet, it has no sources, so it shouldn't match any source filter.
+        if (!analyses[t.id]) return false;
+        
         const sources = analyses[t.id]?.sources || [];
-        // Support "thread" filter capturing tickets with only thread sources, or zero sources (as they relied on thread)
+        
         const hasMatch = sourceFilter.some(sourceType => {
           if (sourceType === "thread") {
+            // A ticket is "thread only" if it has ZERO sources (blank array) OR if all its sources are of type "thread"
             return sources.length === 0 || sources.every(s => s.type === "thread" || s.type === "pylon");
           }
-          // Handle backwards compatibility where pylon_kb might have been recorded as 'pylon'
           if (sourceType === "pylon_kb") {
              return sources.some(s => s.type === "pylon_kb" || s.type === "pylon");
           }
